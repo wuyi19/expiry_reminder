@@ -1,0 +1,65 @@
+name: Build and Release APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+        
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          body: |
+            保质期提醒应用 v1.0.${{ github.run_number }}
+            
+            功能特点：
+            - 添加、编辑和删除商品
+            - 设置生产日期和保质期
+            - 自动计算过期日期
+            - 过期提醒（提前30天、15天、7天、3天和1天）
+            - 按过期时间或名称排序
+            - 直观的状态显示
+            - 统计信息展示
+            
+            安装说明：
+            1. 下载 app-release.apk 文件
+            2. 在手机设置中允许"安装未知来源应用"
+            3. 点击下载的APK文件安装
+            4. 首次使用时允许通知权限
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk 
