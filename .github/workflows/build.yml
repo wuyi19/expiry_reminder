@@ -10,31 +10,49 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Java
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up Java environment and Flutter SDK
+      - name: Set Up Java and Flutter
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '11'
-      
-      - name: Setup Flutter
+
+      - name: Set Up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
           channel: 'stable'
-      
-      - name: Get dependencies
+
+      # Cache Flutter dependencies to speed up subsequent builds
+      - name: Cache Flutter Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      # Install dependencies and check Flutter environment
+      - name: Install Dependencies and Verify Flutter Setup
         run: |
           flutter pub get
-          flutter doctor -v
-        
+          flutter doctor -v  # Verifies that Flutter environment is set up properly
+          echo "Dependencies installed successfully."
+
+      # Build the APK
       - name: Build APK
         run: |
           flutter build apk --release --verbose
-          ls -la build/app/outputs/flutter-apk/
+          echo "APK build completed."
+          ls -la build/app/outputs/flutter-apk/  # Verify APK generation
 
+      # Create a GitHub release (only if build is successful)
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: success()
@@ -63,9 +81,17 @@ jobs:
           prerelease: false
           generate_release_notes: true
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+      # Upload APK as an artifact for later use
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v2  # Use v2 for better stability
         if: success()
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk 
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # Clean up temporary files (if necessary)
+      - name: Clean up Build Artifacts
+        run: |
+          echo "Cleaning up build files."
+          rm -rf build/  # Remove build files to keep the runner clean
+          echo "Build artifacts cleaned."
