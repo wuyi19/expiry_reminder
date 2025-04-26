@@ -31,7 +31,7 @@ jobs:
 
       # Cache Flutter dependencies to speed up subsequent builds
       - name: Cache Flutter Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3  # Updated to v3
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
