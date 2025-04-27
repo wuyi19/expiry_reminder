@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>到期提醒</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>到期提醒器</h1>
+    <form id="reminderForm">
+      <input type="text" id="itemName" placeholder="物品名称" required>
+      <input type="date" id="expiryDate" required>
+      <button type="submit">添加提醒</button>
+    </form>
+
+    <h2>我的提醒</h2>
+    <ul id="reminderList"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
